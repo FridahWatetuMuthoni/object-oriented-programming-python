@@ -120,6 +120,150 @@ d = MyDog('dogname')
 print(d.name)
 print(d.breed)
 
+#Method overriding
+
+class Parent:
+    def __init__(self):
+        self.value = 4
+    
+    def get_value(self):
+        return self.value
+
+
+class Child(Parent):
+    def get_value(self):
+        return self.value + 1
+
+#How to use the super() method
+
+class Rectangle:
+    def __init__(self,length,width):
+        self.length = length
+        self.width  = width
+    
+    def area(self):
+        return self.length * self.width
+    
+    def perimeter(self):
+        return (2 * self.length) + (2 * self.width)
+
+# Here we declare that the Square class inherits from the Rectangle class
+class Square(Rectangle):
+    def __init__(self,length):
+        super().__init__(length,length)
+
+
+class Cube(Square):
+    def surface_area(self):
+        face_area = super().area()
+        return face_area * 6
+    
+    def volume(self):
+        face_area = super().area()
+        return face_area * self.area
+
+# super(Square,self).__init__(length,length) is equivalent to super().__init__(length,length)
+
+class Triangle:
+    def __init__(self, base, height):
+        self.base = base
+        self.height = height
+
+    def area(self):
+        return 0.5 * self.base * self.height
+
+class RightPyramid(Triangle, Square):
+    def __init__(self, base, slant_height):
+        self.base = base
+        self.slant_height = slant_height
+
+    def area(self):
+        base_area = super().area()
+        perimeter = super().perimeter()
+        return 0.5 * perimeter * self.slant_height + base_area
+
+
+#Singleton Example
+#In the below example Logger is a Singleton
+""" 
+When __new__ is called, it normally constructs a new instance of that class. When we 
+override it, we first check if our singleton instance has been created or not. If not, we 
+create it using a super call. Thus, whenever we call the constructor on Logger, we always get the exact same instance.
+"""
+class Logger:
+    def __new__(cls, *args, **kwargs):
+        # checking if the class has an attribute called _logger
+        # if it does not we add it
+        if not hasattr(cls, '_logger'):
+             cls._logger = super(Logger, cls).__new__(cls, *args, **kwargs)
+        return cls._logger
+
+
+
+"""
+(HOW TO ADD METHODS IN DJANGO MODELS)
+
+(RESIZING THE UPLOADED IMAGE BEFORE SAVING IT TO THE DATABASE)
+
+from django.conf import settings
+from django.db import models
+from PIL import Image
+
+class Photo(models.Model):
+    image = models.ImageField()
+    caption = models.CharField(max_length=128, blank=True)
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    IMAGE_MAX_SIZE = (800, 800)
+    
+    def resize_image(self):
+        image = Image.open(self.image)
+        image.thumbnail(self.IMAGE_MAX_SIZE)
+        image.save(self.image.path)
+        
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.resize_image()
+
+(GETING THE WORD COUNT OF THE BLOG CONTENT)
+
+class Blog(models.Model):
+    photo = models.ForeignKey(Photo, null=True, on_delete=models.SET_NULL, blank=True)
+    title = models.CharField(max_length=128)
+    content = models.CharField(max_length=5000)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    starred = models.BooleanField(default=False)
+    word_count = models.IntegerField(null=True)
+
+    def _get_word_count(self):
+        return len(self.content.split(' '))
+
+    def save(self, *args, **kwargs):
+        self.word_count = self._get_word_count()
+        super().save(*args, **kwargs)
+
+
+(SAVING THE SLUG FIELD WITH THE TITLE BEFORE SAVING THE METHOD IN THE DATABASE)
+
+from django.db import models
+
+# importing slugify from django
+from django.utils.text import slugify
+
+# Create your models here.
+class GeeksModel(models.Model):
+	title = models.CharField(max_length = 200)
+	slug = models.SlugField()
+
+	def save(self, *args, **kwargs):
+		self.slug = slugify(self.title)
+		super(GeeksModel, self).save(*args, **kwargs)
+
+
+"""
+
+
 """_summary_
 {CLASS NOTES}
  Classes are preferred over modules because you can reuse them as they are and 
@@ -154,6 +298,16 @@ coupling so that code can be extended and easily maintained over time.
 It actually just means when a function or method produces different this because it depends on the input parameter
 {ABSTRACTION}
 Hiding all the unneccessary details
-
 A class bundles together behavior{functions} and state{variables}
+
+{OVERIDING}
+Overriding is a very important part of OOP since it makes inheritance utilize its full power. 
+By using method overriding a class may "copy" another class, avoiding duplicated code, 
+and at the same time enhance or customize part of it.
+Method overriding is thus a part of the inheritance mechanism.
+In Python method overriding occurs by simply defining in the child class  a method with the same name of 
+a method in the parent class. When you  define a method in the object you make this latter able to satisfy
+that  method call, so the implementations of its ancestors do not come in  play.
+
+
 """
